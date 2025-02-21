@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learnue4service/Pages/messsages.dart';
+import 'package:learnue4service/Pages/phone_login.dart';
 import 'package:learnue4service/app.dart';
 import 'package:learnue4service/controller/bottom_navbar_controller.dart';
 import 'package:learnue4service/utils/app_colors.dart';
@@ -47,7 +48,7 @@ class _MainBottomNavbarScreenState extends State<MainBottomNavbarScreen> {
           showUnselectedLabels: true,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
+            BottomNavigationBarItem(icon: Icon(Icons.message_outlined), label: 'Messages'),
             BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'More'),
           ],
         );
@@ -64,6 +65,22 @@ class _MainBottomNavbarScreenState extends State<MainBottomNavbarScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
+                  ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Login'),
+                    onTap: () {
+                      // Handle settings navigation
+                      Get.to(() => const PhoneLogin());
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Register'),
+                    onTap: () {
+                      // Handle settings navigation
+                      Navigator.pop(context);
+                    },
+                  ),
                   ListTile(
                     leading: const Icon(Icons.settings),
                     title: const Text('Settings'),

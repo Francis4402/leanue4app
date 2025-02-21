@@ -108,15 +108,22 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: const Text('Learn UE4'),
-          backgroundColor: Colors.black,
-
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: AppBar(
+              title: const Text('Learn UE4'),
+              backgroundColor: Colors.transparent,
+              actions: const [
+                CircleAvatar(child: Icon(Icons.person),)
+              ],
+            ),
+          ),
         ),
         body: _channel == null
             ? Center(
