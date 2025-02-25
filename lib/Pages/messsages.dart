@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learnue4service/Pages/chat_page.dart';
+import 'package:learnue4service/Pages/profilepage.dart';
 
 
 class Messsages extends StatelessWidget {
@@ -9,9 +10,20 @@ class Messsages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Messages'),
-        centerTitle: true,
+      appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: AppBar(
+            title: const Text('Messages'),
+            centerTitle: true,
+            actions: [
+              GestureDetector(
+                onTap: (){Get.to(const ProfilePage());},
+                  child: const CircleAvatar(child: Icon(Icons.person),))
+            ],
+          ),
+        ),
       ),
       body: ListView.builder(
         itemCount: 10,

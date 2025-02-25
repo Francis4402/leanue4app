@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:learnue4service/services/api_service.dart';
 import 'package:learnue4service/utils/channel_model.dart';
 import 'package:learnue4service/utils/video_model.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,7 +15,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Channel? _channel;
   bool _isLoading = false;
-
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -24,10 +26,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initChannel() async {
-    Channel channel = await APIService.instance
-        .fetchChannel(channelId: 'UCrHLGHxIEFGIKOwaPwaqjtg');
+    setState(() {
+      _isLoading = true;
+    });
+
+    Channel channel = await APIService.instance.fetchChannel(channelId: 'UCrHLGHxIEFGIKOwaPwaqjtg');
+
     setState(() {
       _channel = channel;
+      _isLoading = false;
     });
   }
 
@@ -41,7 +48,6 @@ class _HomePageState extends State<HomePage> {
       await launchUrl(youtubeWebUri, mode: LaunchMode.externalApplication);
     }
   }
-
 
   Widget _buildVideo(Video video) {
     return GestureDetector(
@@ -107,49 +113,92 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  List<Video> get _filteredVideos {
+    if (_searchQuery.isEmpty) {
+      return _channel?.videos ?? [];
+    }
+    return _channel!.videos
+        .where((video) => video.title.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: AppBar(
-              title: const Text('Learn UE4'),
-              backgroundColor: Colors.transparent,
-              actions: const [
-                CircleAvatar(child: Icon(Icons.person),)
-              ],
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: _isSearching
+              ? TextField(
+            controller: _searchController,
+            decoration: const InputDecoration(
+              hintText: 'Search videos...',
+              hintStyle: TextStyle(color: Colors.white60),
+              border: InputBorder.none,
             ),
-          ),
+            style: const TextStyle(color: Colors.white),
+            onChanged: (query) {
+              setState(() {
+                _searchQuery = query;
+              });
+            },
+          )
+              : const Text('Learn UE4'),
         ),
-        body: _channel == null
-            ? Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor),
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                  _searchQuery = '';
+                }
+              });
+            },
           ),
-        )
-            : NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification scrollDetails) {
-            if (!_isLoading &&
-                _channel!.videos.length !=
-                    int.parse(_channel!.videoCount) &&
-                scrollDetails.metrics.pixels ==
-                    scrollDetails.metrics.maxScrollExtent) {
-              _loadMoreVideos();
-            }
-            return false;
+          const Padding(
+            padding: EdgeInsets.only(right: 20),
+            child: CircleAvatar(child: Icon(Icons.person)),
+          ),
+        ],
+      ),
+      body: _channel == null || _isLoading
+          ? ListView.builder(
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Skeletonizer(
+            enabled: true,
+            child: _buildVideo(Video(
+              id: '',
+              title: 'Loading...',
+              thumbnailUrl: 'https://res.cloudinary.com/dse9babc4/image/upload/v1740510362/forthumbnailloading_va8go2.png', channelTitle: 'learn ue4',
+            )),
+          );
+        },
+      )
+          : NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollDetails) {
+          if (!_isLoading &&
+              _channel!.videos.length !=
+                  int.parse(_channel!.videoCount) &&
+              scrollDetails.metrics.pixels ==
+                  scrollDetails.metrics.maxScrollExtent) {
+            _loadMoreVideos();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          itemCount: _filteredVideos.length,
+          itemBuilder: (BuildContext context, int index) {
+            Video video = _channel!.videos[index];
+            return _buildVideo(video);
           },
-          child: ListView.builder(
-              itemCount: _channel!.videos.length,
-              itemBuilder: (BuildContext context, int index) {
-                Video video = _channel!.videos[index];
-                return _buildVideo(video);
-              }),
         ),
+      ),
     );
   }
 }

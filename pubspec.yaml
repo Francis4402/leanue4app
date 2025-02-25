@@ -47,6 +47,8 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   shared_preferences: ^2.5.2
   cached_network_image: ^3.4.1
+  skeletonizer: ^1.4.3
+  page_transition: ^2.2.1
 
 
 dev_dependencies:
